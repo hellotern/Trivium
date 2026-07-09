@@ -14,12 +14,23 @@
 | `/trivium:refactor` | Changes & refactoring | impact analysis → behavior-pinning tests → proposal with ADRs → plan → implementation with a green baseline invariant → regression |
 | `/trivium:bugfix` | Defects | failing reproduction test **first** → systematic root-cause analysis → minimal fix → red-to-green + full regression. Accepts an Excel/CSV bug list for batch triage mode. |
 
+## The map: `/trivium:inception`
+
+For a **new project**, one `/feature` run cannot swallow the whole vision — and pre-generating hundreds of tasks is planning that decays before it runs. `/trivium:inception` draws the map instead (run once per project):
+
+1. **Vision constitution** (`docs/project/00-vision.md`): goals, users, success metrics, project-level non-goals. 🚦
+2. **System architecture & conventions** (`01-architecture.md`, `02-conventions.md` → feeds CLAUDE.md; initializes the project-level API contract). 🚦
+3. **Backlog** (`backlog.md`): epic → feature, **stopping at feature grain** — tasks are generated just-in-time inside each `/feature` run. Every entry carries a `route:` label (feature / refactor / bugfix, judged by its relationship to defined behavior) and a copy-pasteable `Run:` command. The first entry is always a **walking skeleton**: the thinnest slice through every architectural layer, validating the architecture before anything else is built. 🚦
+
+The long-running loop is then simply: pick the next backlog entry → paste its `Run:` line → sign gates → status writes back → repeat. Routes are re-checked at execution time (labels decay as the codebase evolves), features whose plans exceed ~20 tasks get split instead of swallowed, and each feature's contract merges as a delta into the project master contract.
+
 ## The four gates
 
 Your role collapses to signing off at gates. Between gates, the pipeline runs itself.
 
 | | Gate 1 | Gate 2 | Gate 3 | Gate 4 |
 |---|---|---|---|---|
+| inception | approve vision | approve architecture + conventions | approve backlog + first milestone | — |
 | feature | approve PRD | approve architecture + contract | approve plan | final acceptance |
 | refactor | confirm impact + behavior classification | approve proposal | approve plan | final regression |
 | bugfix (single) | confirm reproduction | — | — | final sign-off |
@@ -62,10 +73,12 @@ Or directly from this repository:
 Text and file inputs, mixable:
 
 ```
+/trivium:inception docs/vision.md            # new project: draw the map first
+/trivium:feature backlog#F-001               # then consume the backlog entry by entry
 /trivium:feature Users can register and log in with email, with remember-me
 /trivium:feature docs/specs/membership.docx  Note: email only this cycle, no phone signup
 /trivium:refactor Consolidate the order module's scattered useState into a state machine
-/trivium:refactor docs/review-feedback-orders.md
+/trivium:refactor backlog#T-004
 /trivium:bugfix Form submission intermittently returns 500; logs show duplicate key
 /trivium:bugfix qa/uat-defect-list.xlsx
 ```

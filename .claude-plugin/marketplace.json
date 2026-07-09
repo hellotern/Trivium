@@ -4,11 +4,19 @@
     "name": "Mohist",
     "url": "https://github.com/hellotern"
   },
+  "description": "Spec-driven development pipelines for Claude Code: three roads (/feature, /refactor, /bugfix) with hard human-approval gates, frozen API contracts enabling parallel FE/BE subagents, and PRD-traced Playwright acceptance.",
   "plugins": [
     {
       "name": "trivium",
       "source": "./",
-      "description": "Spec-driven development pipelines: /feature, /refactor, /bugfix with human-approval gates, frozen API contracts, and PRD-traced Playwright acceptance.",
+      "description": "Spec-driven development pipelines: /feature, /refactor, /bugfix (plus /inception to map new projects) with human-approval gates, frozen API contracts, and PRD-traced Playwright acceptance.",
+      "version": "1.0.0",
+      "author": {
+        "name": "Mohist",
+        "url": "https://github.com/hellotern"
+      },
+      "homepage": "https://github.com/hellotern/Trivium",
+      "license": "MIT",
       "category": "development",
       "keywords": ["workflow", "spec-driven", "pipeline", "prd", "tdd", "playwright"]
     }

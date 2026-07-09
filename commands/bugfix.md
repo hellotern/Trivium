@@ -11,7 +11,11 @@ $ARGUMENTS
 
 ## Phase 0 — Input Parsing & Mode Selection
 
-`$ARGUMENTS` may be: **text describing a single bug**; a **file path** — either a bug description document (.md / .txt / .docx / .doc / .pdf) or a **bug-list spreadsheet (.xlsx / .xls / .csv)**; or a file plus supplementary notes.
+`$ARGUMENTS` may be: **text describing a single bug**; a **file path** — either a bug description document (.md / .txt / .docx / .doc / .pdf) or a **bug-list spreadsheet (.xlsx / .xls / .csv)**; a **backlog reference** (`backlog#<ID>`); or a file plus supplementary notes.
+
+### 0.0 Backlog reference
+
+Read the entry from `docs/project/backlog.md` (stop if missing). **Route re-check**: confirm this is genuinely a deviation from defined behavior in delivered code — if it introduces new behavior, redirect to `/trivium:feature`; if it is behavior-preserving restructuring, redirect to `/trivium:refactor`. Use the entry's Description as the bug description; mark 🔧, write back ✅ on final sign-off. Then proceed in single-bug mode.
 
 ### 0.1 Document files (.md/.txt/.docx/.doc/.pdf) → single-bug mode
 
@@ -41,7 +45,7 @@ Initial assessment: <reproducibility / suspected shared root cause with other bu
 
 1. **No failing reproduction test, no production-code changes.** If you cannot prove the bug exists, you cannot prove it is fixed.
 2. **No root cause understood, no fix attempted.** Root-cause analysis is enforced by `superpowers:systematic-debugging`, which explicitly forbids fixing what you have not understood.
-3. **Minimal fix.** Fix the root cause only — no drive-by refactoring, no opportunistic optimization, no scope expansion. Other problems discovered along the way go to `docs/pipeline/backlog.md`; anything needing restructuring goes to /refactor.
+3. **Minimal fix.** Fix the root cause only — no drive-by refactoring, no opportunistic optimization, no scope expansion. Other problems discovered along the way are recorded as new entries with route labels in `docs/project/backlog.md` (or `docs/pipeline/backlog.md` if no project backlog exists); anything needing restructuring gets `route: refactor`.
 
 If any referenced `superpowers:*` skill is unavailable, stop and instruct the user to install the superpowers plugin.
 

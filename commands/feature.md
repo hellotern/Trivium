@@ -11,7 +11,15 @@ $ARGUMENTS
 
 ## Phase 0 — Input Parsing (automatic, no gate)
 
-`$ARGUMENTS` may be **requirement text**, **one or more file paths** (.md / .txt / .docx / .doc / .pdf), or a **mix of files plus supplementary notes**.
+`$ARGUMENTS` may be **requirement text**, **one or more file paths** (.md / .txt / .docx / .doc / .pdf), a **backlog reference** (`backlog#<ID>`, e.g. `backlog#F-012`), or a **mix of the above plus supplementary notes**.
+
+### 0.a Backlog reference (`backlog#<ID>`)
+
+1. Read the entry from `docs/project/backlog.md`. If the file or the ID does not exist, stop and tell the user.
+2. **Route re-check**: verify the entry still belongs on this road using the relationship-to-defined-behavior rule (new observable behavior → feature; behavior preserved, structure changed → refactor; deviation from defined behavior → bugfix). Triage-time labels decay as the codebase evolves — if the entry's substance no longer matches `route: feature` (e.g. the capability already partially exists), stop and recommend the correct command instead of forcing this pipeline.
+3. Use the entry's Description + Dependencies as the raw requirement; mark the entry 🔧 in-progress. When Gate 4 passes, **write the entry's status back to ✅** in backlog.md.
+
+### 0.b File and text input
 
 1. Classify: any token that looks like a path and verifiably exists on disk is an input file; remaining text is supplementary notes.
 2. Extract content by extension:
@@ -51,6 +59,7 @@ docs/pipeline/<feature-slug>/
 
 ## Phase 1 — Disambiguation & PRD
 
+0. **Project-context awareness**: if `docs/project/` exists (created by `/trivium:inception`), read `00-vision.md`, `01-architecture.md`, and `02-conventions.md` first. Disambiguation then asks **feature-level questions only** — project-level questions (users, non-goals, stack, conventions) are already answered there and must not be re-asked. The PRD **references** project documents instead of restating them, and must not contradict the vision's non-goals; a genuine conflict goes to the user as a vision question, not a silent PRD decision.
 1. Invoke the `superpowers:brainstorming` skill for Socratic disambiguation of the raw requirement. Questions must cover: target users and scenarios, functional boundaries (explicitly what NOT to build), relationship to the existing system, non-functional constraints (performance / security / compatibility), and observable acceptance criteria.
 2. When disambiguation completes, invoke the `trivium:prd-writing` skill and generate the PRD per its template into `01-prd.md`.
 3. Present the user a **summary** (feature list + priorities + out-of-scope), not the full document.
@@ -63,7 +72,7 @@ docs/pipeline/<feature-slug>/
 
 1. Design the technical architecture from the approved PRD. Record every significant decision (framework, data model, state management, auth, etc.) as an ADR inside `02-design.md`: each ADR contains Context / Options / Decision / Trade-offs.
 2. Split frontend vs. backend responsibilities: which logic lives where, and where the boundary sits.
-3. Invoke the `trivium:api-contract` skill to produce the OpenAPI spec + TypeScript types + mock plan into `02-contract/`. Once approved at Gate 2, the contract is **frozen**.
+3. Invoke the `trivium:api-contract` skill to produce the OpenAPI spec + TypeScript types + mock plan into `02-contract/`. **If a project-level contract exists** (`docs/project/contract/`, created by inception): this feature's `02-contract/` contains the **delta** (new/changed endpoints only, reusing the project's shared components — error body, pagination, auth); on Gate 2 approval, merge the delta into the project master contract, regenerate the master `types.ts`, and record the merge in the master `CHANGELOG.md`. Without a project contract, `02-contract/` stands alone as before. Once approved at Gate 2, the contract is **frozen**.
 4. Present: architecture summary, key ADR decisions, endpoint list.
 
 **🚦 Gate 2: STOP. Await user approval of architecture and contract.**
@@ -78,6 +87,7 @@ docs/pipeline/<feature-slug>/
    - `[FE]` tasks develop exclusively against the mocks from `02-contract/` — never against a live backend;
    - `[BE]` task verification must include contract tests (implementation matches openapi.yaml);
    - The plan **must end with an `[INTEGRATION]` task**: remove mocks, wire FE to the real backend, prepare for Phase 5 acceptance. A plan without an integration task is incomplete and must not be submitted to Gate 3.
+   - **Size guard**: if the plan exceeds ~20 tasks, the feature is cut too coarse. Stop, propose a split into two (or more) independently deliverable features (updating backlog.md if this came from a backlog entry), and let the user choose at Gate 3 — do not swallow an oversized plan.
 3. Present the task list (id, tag, one-line goal, dependencies).
 
 **🚦 Gate 3: STOP. Await user approval of the plan.**

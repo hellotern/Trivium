@@ -11,7 +11,13 @@ $ARGUMENTS
 
 ## Phase 0 — Input Parsing (automatic, no gate)
 
-`$ARGUMENTS` may be a **textual change description**, **one or more file paths** (.md / .txt / .docx / .doc / .pdf — e.g. change requests, review feedback, legacy design docs), or both.
+`$ARGUMENTS` may be a **textual change description**, **one or more file paths** (.md / .txt / .docx / .doc / .pdf — e.g. change requests, review feedback, legacy design docs), a **backlog reference** (`backlog#<ID>`), or a mix.
+
+### 0.a Backlog reference
+
+Read the entry from `docs/project/backlog.md` (stop if missing). **Route re-check**: confirm the entry is genuinely behavior-preserving structural change — if it actually introduces new observable behavior, redirect to `/trivium:feature`; if it is a deviation from defined behavior, redirect to `/trivium:bugfix`. Use Description + Dependencies as the change request; mark 🔧, and write back ✅ when Gate 4 passes.
+
+### 0.b File and text input
 
 1. Classify: tokens that look like paths and exist on disk are input files; the rest is supplementary notes.
 2. Extract by extension: `.md`/`.txt` read directly; `.docx` via `pandoc <file> -t gfm -o -` (python-docx fallback); `.doc` via `libreoffice --headless --convert-to docx` first; `.pdf` via `pdftotext -layout` (pdfplumber fallback). If a scanned PDF yields nothing, stop and request a text version.
@@ -45,7 +51,7 @@ docs/pipeline/<refactor-slug>/
 
 ## Phase 1 — Impact Analysis & Behavior Pinning
 
-1. **Read code before asking questions.** Use a subagent to explore the current state: affected files and modules, all callers and callees, involved API endpoints and data structures, existing test coverage. Compress long findings into conclusions in `01-impact.md`.
+1. **Read code before asking questions.** If `docs/project/` exists, also read the vision, architecture, and conventions first — the proposal must stay consistent with project-level ADRs, and superseding one requires flagging it explicitly at Gate 2. Use a subagent to explore the current state: affected files and modules, all callers and callees, involved API endpoints and data structures, existing test coverage. Compress long findings into conclusions in `01-impact.md`.
 2. If the change request is ambiguous (how far to go, which behaviors may change, performance/compat constraints), invoke `superpowers:brainstorming` to disambiguate with the user. The output must explicitly separate **behaviors allowed to change** (the requirement delta) from **behaviors that must be preserved**.
 3. **Establish the behavioral baseline**: write characterization tests for every must-preserve behavior — record current input/output faithfully without judging whether it is "correct". For externally consumed APIs, baseline against the existing `02-contract/` (if present) or observed behavior. Run the full suite and confirm a green baseline.
 4. Present: impact summary, behavior classification (preserve vs. allowed-to-change), baseline test status.
