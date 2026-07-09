@@ -55,6 +55,14 @@ Plus the pipeline mechanics: hard stop-and-wait gates, all artifacts written to 
 - Recommended: `openapi-typescript` (type generation); MSW or `@stoplight/prism-cli` (mocks)
 - For file input: `pandoc` (docx), `poppler-utils` (pdf), `libreoffice` (legacy .doc); Python fallbacks: `pip install python-docx pdfplumber pandas openpyxl`
 
+## Works great with
+
+Trivium's structural steps — codebase archaeology, impact / blast-radius analysis, root-cause tracing — automatically use a **code-intelligence MCP or LSP** when one is installed, preferring graph queries and call tracing over text search for "who calls this?" and "what breaks if I change it?". This is capability-detected and **entirely optional**: with no such tool present, Trivium falls back to subagent exploration. (Only [superpowers](https://github.com/obra/superpowers) is a hard dependency — it is methodology, not a tool.)
+
+- **GitNexus** — a code-graph MCP with impact / blast-radius queries, plus a PostToolUse hook that rebuilds its index after each commit so blast-radius answers stay fresh. Its open-source edition is licensed **PolyForm Noncommercial**; commercial use requires an enterprise license — confirm this fits before relying on it in a for-profit setting.
+
+Two rules whenever you lean on a code-graph tool: confirm the **index is fresh** before trusting a query (a stale graph is worse than none), and verify the tool's **license** covers your use.
+
 ## Install
 
 From the official plugin directory (once listed):

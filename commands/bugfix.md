@@ -72,7 +72,7 @@ This command is for defects in **delivered / merged code**. If the bug was found
 ## Phase 2 — Root Cause
 
 1. Invoke `superpowers:systematic-debugging` and follow its four-phase process.
-2. Produce the root-cause conclusion: where the defect was introduced (which change / which broken assumption), its propagation path, and why existing tests did not catch it.
+2. Produce the root-cause conclusion: where the defect was introduced (which change / which broken assumption), its propagation path, and why existing tests did not catch it. **When tracing the propagation path and callers, prefer a code-intelligence MCP or LSP** if one is available and freshly indexed (call tracing, dependency queries) over text search; fall back to reading otherwise. Structure locates the path; only reading confirms the mechanism.
 3. Brief the user (one paragraph; not a gate — unless the root cause reveals a fix scope far beyond expectations, in which case stop and consult; it may belong in /refactor).
 
 ## Phase 3 — Minimal Fix

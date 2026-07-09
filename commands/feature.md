@@ -66,6 +66,8 @@ One step, one artifact (`01-context.md`), before any disambiguation question. Bu
 2. **Feature-level codebase archaeology** — dispatch a subagent to survey the ground *this* feature will land on: the modules and files it will touch or sit beside; the **existing data models** relevant to it (tables/entities and ownership); **reusable components, services, and utilities** already present; the local **conventions** it must conform to; and existing tests around the affected area. This is **incremental, not a full re-survey**: when `docs/project/` already exists (brownfield inception has mapped the system), build on `01-architecture.md` and dig only the slice this feature touches; with no project docs, cast a slightly wider net since this is the only archaeology. **Skip archaeology entirely only for a truly greenfield, near-empty repo** where there is nothing to dig.
 3. Record **conclusions, not code dumps** into `01-context.md` — each conclusion names the concrete artifact (file / table / component) it refers to.
 
+**Tools over text search for structure.** If a code-intelligence MCP or LSP is available (code-graph / impact queries, call tracing), use it for structural facts — callers, dependencies, blast radius — rather than grepping, *after confirming its index is fresh* (a stale graph gives a false picture, more dangerous than none; treat low-confidence edges as candidates to verify by reading). Otherwise fall back to plain subagent exploration. Either way, structure tells you *where* to look; reading the code tells you what it *means* — the `01-context.md` conclusions still require that reading step.
+
 No gate here; the output feeds Phase 1, and its highlights are surfaced at Gate 1 for your sanity check.
 
 ---
