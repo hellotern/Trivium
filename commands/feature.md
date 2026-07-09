@@ -1,5 +1,5 @@
 ---
-description: "Full feature pipeline: brownfield archaeology → disambiguation → PRD → architecture & migration-aware API contract → plan → subagent implementation → regression + Playwright acceptance"
+description: "Full feature pipeline: context loading (project docs + brownfield archaeology) → disambiguation → PRD → architecture & migration-aware API contract → plan → subagent implementation → regression + Playwright acceptance"
 argument-hint: "<requirement text and/or file path(s): .md .txt .docx .doc .pdf>"
 ---
 
@@ -46,7 +46,7 @@ $ARGUMENTS
 ```
 docs/pipeline/<feature-slug>/
 ├── 00-source.md         # Phase 0 (only when file input was given)
-├── 01-context.md        # Phase 1.0 (brownfield codebase archaeology)
+├── 01-context.md        # Phase 0.5 (project docs + feature-level archaeology)
 ├── 01-prd.md            # Phase 1
 ├── 02-design.md         # Phase 2 (architecture + ADRs)
 ├── 02-contract/         # Phase 2 (openapi.yaml + types.ts + mock notes)
@@ -58,24 +58,23 @@ docs/pipeline/<feature-slug>/
 
 ---
 
-## Phase 1.0 — Codebase Archaeology (brownfield only, automatic, no gate)
+## Phase 0.5 — Context Loading (automatic, no gate)
 
-**Skip entirely for a greenfield project** (empty or near-empty repo). Otherwise, before asking a single disambiguation question, dispatch a subagent to survey the ground the feature will land on. Building a feature into an existing system is the norm, not the exception — and a new feature almost always interacts with existing tables, auth, and modules. Questions asked before reading the code are asked in a vacuum, and Phase 2 is far likelier to invent a pattern that clashes with what already exists.
+One step, one artifact (`01-context.md`), before any disambiguation question. Building a feature into an existing system is the norm, not the exception — questions asked before reading the ground are asked in a vacuum, and Phase 2 then invents patterns that clash with what already exists. Load context in two passes, cheapest first:
 
-1. Explore and record conclusions into `01-context.md`: the modules and files the feature will touch or sit beside; the **existing data models** relevant to it (tables/entities and their ownership); **reusable components, services, and utilities** already present; the established **conventions** (naming, error handling, auth, validation) it must conform to; and existing tests around the affected area.
-2. Compress findings into conclusions, not code dumps — each conclusion names the concrete artifact (file / table / component) it refers to.
-3. Phase 1 disambiguation and the PRD build **on top of** `01-context.md`: questions probe the gap between what exists and what is wanted, and the later design prefers conforming to discovered patterns over inventing parallel ones.
+1. **Project context** — if `docs/project/` exists (created by `/trivium:inception`), read `00-vision.md`, `01-architecture.md`, and `02-conventions.md` first. These already answer project-level questions (users, non-goals, stack, conventions); Phase 1 must not re-ask them, and the PRD **references** these documents rather than restating them.
+2. **Feature-level codebase archaeology** — dispatch a subagent to survey the ground *this* feature will land on: the modules and files it will touch or sit beside; the **existing data models** relevant to it (tables/entities and ownership); **reusable components, services, and utilities** already present; the local **conventions** it must conform to; and existing tests around the affected area. This is **incremental, not a full re-survey**: when `docs/project/` already exists (brownfield inception has mapped the system), build on `01-architecture.md` and dig only the slice this feature touches; with no project docs, cast a slightly wider net since this is the only archaeology. **Skip archaeology entirely only for a truly greenfield, near-empty repo** where there is nothing to dig.
+3. Record **conclusions, not code dumps** into `01-context.md` — each conclusion names the concrete artifact (file / table / component) it refers to.
 
-No gate here; the output feeds Phase 1.
+No gate here; the output feeds Phase 1, and its highlights are surfaced at Gate 1 for your sanity check.
 
 ---
 
 ## Phase 1 — Disambiguation & PRD
 
-0. **Project-context awareness**: if `docs/project/` exists (created by `/trivium:inception`), read `00-vision.md`, `01-architecture.md`, and `02-conventions.md` first. Disambiguation then asks **feature-level questions only** — project-level questions (users, non-goals, stack, conventions) are already answered there and must not be re-asked. The PRD **references** project documents instead of restating them, and must not contradict the vision's non-goals; a genuine conflict goes to the user as a vision question, not a silent PRD decision.
-1. Invoke the `superpowers:brainstorming` skill for Socratic disambiguation of the raw requirement. Questions must cover: target users and scenarios, functional boundaries (explicitly what NOT to build), relationship to the existing system, non-functional constraints (performance / security / compatibility), and observable acceptance criteria.
+1. Invoke the `superpowers:brainstorming` skill for Socratic disambiguation, grounded in `01-context.md`: questions probe the gap between what exists and what is wanted, and must cover target users and scenarios, functional boundaries (explicitly what NOT to build), relationship to the existing system, non-functional constraints (performance / security / compatibility), and observable acceptance criteria. Do not re-ask project-level questions already answered by `docs/project/`; a genuine conflict with the vision's non-goals goes to the user as a vision question, not a silent PRD decision.
 2. When disambiguation completes, invoke the `trivium:prd-writing` skill and generate the PRD per its template into `01-prd.md`.
-3. Present the user a **summary** (feature list + priorities + out-of-scope), not the full document.
+3. Present the user a **summary** (feature list + priorities + out-of-scope) **plus the key archaeology conclusions from `01-context.md`** — modules involved, reusable components to build on, related tables — so approving the PRD also confirms the feature is anchored to the right part of the codebase. Not the full document.
 
 **🚦 Gate 1: STOP. Await user approval of the PRD.**
 

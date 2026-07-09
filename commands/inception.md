@@ -21,7 +21,7 @@ Detect the starting point before Phase 1: an empty or near-empty repo is **green
 
 - **Vision (Phase 1)** is still elicited from you and confirmed at Gate 1 — direction is a human decision, never reverse-engineered from code.
 - **Architecture & conventions (Phase 2)** are **extracted from the code, not invented**: dispatch a subagent to derive the real module boundaries, data ownership, stack, and de-facto conventions, and record them as the starting `01-architecture.md` / `02-conventions.md`. Where the code diverges from what it *should* be, note the gap and seed it as a `route: refactor` backlog entry rather than silently blessing it.
-- **Contract** is **reverse-generated** from the existing endpoints into `docs/project/contract/` as the project master contract, instead of starting from an empty skeleton.
+- **Contract** is **reverse-generated** from the existing endpoints into `docs/project/contract/` as the project master contract, instead of starting from an empty skeleton. **Scoped, not exhaustive** — reverse-engineering hundreds of endpoints up front is wasted work, since most are never touched by a new feature: capture only the **shared components** (error body, pagination, auth scheme) plus the **core high-frequency endpoints**, and let the long tail be backfilled on demand — each remaining endpoint is added to the master contract the first time a feature touches it, in that feature's Phase 2.
 - **Backlog (Phase 3)** holds only **future** work; the mandatory walking-skeleton entry is **skipped** when a running system already exists (the skeleton it would validate is already in production).
 
 ## Phase 0 — Input Parsing (automatic, no gate)
