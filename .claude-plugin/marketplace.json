@@ -1,0 +1,16 @@
+{
+  "name": "trivium",
+  "owner": {
+    "name": "Mohist",
+    "url": "https://github.com/hellotern"
+  },
+  "plugins": [
+    {
+      "name": "trivium",
+      "source": "./",
+      "description": "Spec-driven development pipelines: /feature, /refactor, /bugfix with human-approval gates, frozen API contracts, and PRD-traced Playwright acceptance.",
+      "category": "development",
+      "keywords": ["workflow", "spec-driven", "pipeline", "prd", "tdd", "playwright"]
+    }
+  ]
+}

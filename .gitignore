@@ -1,0 +1,43 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# JetBrains IDE (workspace/user-specific files; shared config is tracked)
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/usage.statistics.xml
+.idea/shelf/
+.idea/dictionaries/
+*.iml
+
+# Editors
+.vscode/
+*.swp
+*.swo
+*~
+
+# Node (in case tooling is added later)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store/
+
+# Logs & temp
+*.log
+tmp/
+temp/
+.cache/
+
+# Environment
+.env
+.env.local
+.env.*.local
