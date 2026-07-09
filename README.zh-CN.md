@@ -10,7 +10,7 @@
 
 | 命令 | 场景 | 流水线 |
 |---|---|---|
-| `/trivium:feature` | 新增需求 | 苏格拉底消歧 → PRD → 架构与冻结 API 合同 → 任务计划 → subagent 实现（TDD + 两阶段 review）→ Playwright 验收 |
+| `/trivium:feature` | 新增需求 | 存量代码考古 → 苏格拉底消歧 → PRD → 架构与冻结 API 合同（复用优先 ADR + 迁移/回滚方案）→ 任务计划 → subagent 实现（TDD + 两阶段 review）→ 全量回归 + Playwright 验收 |
 | `/trivium:refactor` | 重构 / 需求变更 | 影响面分析 → 行为锁定测试 → 变更方案与 ADR → 计划 → 基线常绿实现 → 回归 |
 | `/trivium:bugfix` | 缺陷修复 | 失败复现测试**先行** → 系统化根因定位 → 最小修复 → 红转绿 + 全量回归。支持 Excel/CSV 缺陷清单批量分诊模式。 |
 
@@ -21,6 +21,8 @@
 1. **愿景宪法**（`docs/project/00-vision.md`）：目标、用户、成功指标、项目级非目标。🚦
 2. **系统架构与全局约定**（`01-architecture.md`、`02-conventions.md` → 同步 CLAUDE.md；初始化项目级 API 合同）。🚦
 3. **Backlog**（`backlog.md`）：epic → feature 两级，**到 feature 粒度为止**——task 在每次 /feature 运行时即时生成。每个条目带 `route:` 路由标签（feature / refactor / bugfix，按"与已定义行为的关系"判定）和可直接复制的 `Run:` 执行命令。首条强制为**行走骨架**：打穿全部架构层的最薄切片，先验证架构再砌砖。🚦
+
+**接手存量项目？** `/trivium:inception` 还支持 **brownfield（存量）模式**：架构与约定*从代码中提取*而非凭空设计，主合同由现有接口反向生成，跳过行走骨架，backlog 只装未来需求——愿景仍由你确认，三道 Gate 不变。
 
 长期循环收敛为：取下一条 backlog → 粘贴 Run 行 → 签 Gate → 状态自动回写 → 重复。路由标签在执行时复核（标签随代码库演化而失效），计划超过约 20 个 task 的 feature 会被要求拆分而非硬吞，每个 feature 的合同以增量方式合并进项目主合同。
 

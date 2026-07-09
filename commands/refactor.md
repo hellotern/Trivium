@@ -19,7 +19,7 @@ Read the entry from `docs/project/backlog.md` (stop if missing). **Route re-chec
 
 ### 0.b File and text input
 
-1. Classify: tokens that look like paths and exist on disk are input files; the rest is supplementary notes.
+1. Classify: tokens that look like paths and exist on disk are input files; the rest is supplementary notes. **Filenames with spaces**: when a path-like token does not resolve on its own, greedily test whether it joined with the following token(s) by single spaces forms a path that does exist — if so, treat that whole span as one file before classifying the leftover tokens as notes.
 2. Extract by extension: `.md`/`.txt` read directly; `.docx` via `pandoc <file> -t gfm -o -` (python-docx fallback); `.doc` via `libreoffice --headless --convert-to docx` first; `.pdf` via `pdftotext -layout` (pdfplumber fallback). If a scanned PDF yields nothing, stop and request a text version.
 3. Archive extracted content verbatim to `docs/pipeline/<refactor-slug>/00-source.md` (header: source + method), the authoritative change-request source for later phases.
 4. Merge with supplementary notes as the change request for Phase 1; notes win on conflict, confirmed explicitly during disambiguation. Pure-text input goes straight to Phase 1.

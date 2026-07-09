@@ -13,6 +13,8 @@ $ARGUMENTS
 
 `$ARGUMENTS` may be: **text describing a single bug**; a **file path** — either a bug description document (.md / .txt / .docx / .doc / .pdf) or a **bug-list spreadsheet (.xlsx / .xls / .csv)**; a **backlog reference** (`backlog#<ID>`); or a file plus supplementary notes.
 
+**Filenames with spaces**: when matching a file path, if a path-like token does not resolve on its own, greedily test whether it joined with the following token(s) by single spaces forms a path that does exist — if so, treat that whole span as one file before classifying the rest as bug description / notes.
+
 ### 0.0 Backlog reference
 
 Read the entry from `docs/project/backlog.md` (stop if missing). **Route re-check**: confirm this is genuinely a deviation from defined behavior in delivered code — if it introduces new behavior, redirect to `/trivium:feature`; if it is behavior-preserving restructuring, redirect to `/trivium:refactor`. Use the entry's Description as the bug description; mark 🔧, write back ✅ on final sign-off. Then proceed in single-bug mode.

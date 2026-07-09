@@ -1,5 +1,5 @@
 ---
-description: "Full feature pipeline: disambiguation → PRD → architecture & API contract → plan → subagent implementation → Playwright acceptance"
+description: "Full feature pipeline: brownfield archaeology → disambiguation → PRD → architecture & migration-aware API contract → plan → subagent implementation → regression + Playwright acceptance"
 argument-hint: "<requirement text and/or file path(s): .md .txt .docx .doc .pdf>"
 ---
 
@@ -21,7 +21,7 @@ $ARGUMENTS
 
 ### 0.b File and text input
 
-1. Classify: any token that looks like a path and verifiably exists on disk is an input file; remaining text is supplementary notes.
+1. Classify: any token that looks like a path and verifiably exists on disk is an input file; remaining text is supplementary notes. **Filenames with spaces**: when a path-like token does not resolve on its own, greedily test whether it joined with the following token(s) by single spaces forms a path that *does* exist — if so, treat that whole span as one file before classifying the leftover tokens as notes.
 2. Extract content by extension:
    - `.md` / `.txt`: read directly;
    - `.docx`: `pandoc <file> -t gfm -o -`; if pandoc is unavailable, use python-docx (`pip install python-docx`) walking paragraphs and tables;
@@ -46,6 +46,7 @@ $ARGUMENTS
 ```
 docs/pipeline/<feature-slug>/
 ├── 00-source.md         # Phase 0 (only when file input was given)
+├── 01-context.md        # Phase 1.0 (brownfield codebase archaeology)
 ├── 01-prd.md            # Phase 1
 ├── 02-design.md         # Phase 2 (architecture + ADRs)
 ├── 02-contract/         # Phase 2 (openapi.yaml + types.ts + mock notes)
@@ -54,6 +55,18 @@ docs/pipeline/<feature-slug>/
 ```
 
 `<feature-slug>` is a short kebab-case identifier derived from the requirement, e.g. `user-auth-jwt`.
+
+---
+
+## Phase 1.0 — Codebase Archaeology (brownfield only, automatic, no gate)
+
+**Skip entirely for a greenfield project** (empty or near-empty repo). Otherwise, before asking a single disambiguation question, dispatch a subagent to survey the ground the feature will land on. Building a feature into an existing system is the norm, not the exception — and a new feature almost always interacts with existing tables, auth, and modules. Questions asked before reading the code are asked in a vacuum, and Phase 2 is far likelier to invent a pattern that clashes with what already exists.
+
+1. Explore and record conclusions into `01-context.md`: the modules and files the feature will touch or sit beside; the **existing data models** relevant to it (tables/entities and their ownership); **reusable components, services, and utilities** already present; the established **conventions** (naming, error handling, auth, validation) it must conform to; and existing tests around the affected area.
+2. Compress findings into conclusions, not code dumps — each conclusion names the concrete artifact (file / table / component) it refers to.
+3. Phase 1 disambiguation and the PRD build **on top of** `01-context.md`: questions probe the gap between what exists and what is wanted, and the later design prefers conforming to discovered patterns over inventing parallel ones.
+
+No gate here; the output feeds Phase 1.
 
 ---
 
@@ -71,9 +84,11 @@ docs/pipeline/<feature-slug>/
 ## Phase 2 — Architecture & API Contract
 
 1. Design the technical architecture from the approved PRD. Record every significant decision (framework, data model, state management, auth, etc.) as an ADR inside `02-design.md`: each ADR contains Context / Options / Decision / Trade-offs.
-2. Split frontend vs. backend responsibilities: which logic lives where, and where the boundary sits.
-3. Invoke the `trivium:api-contract` skill to produce the OpenAPI spec + TypeScript types + mock plan into `02-contract/`. **If a project-level contract exists** (`docs/project/contract/`, created by inception): this feature's `02-contract/` contains the **delta** (new/changed endpoints only, reusing the project's shared components — error body, pagination, auth); on Gate 2 approval, merge the delta into the project master contract, regenerate the master `types.ts`, and record the merge in the master `CHANGELOG.md`. Without a project contract, `02-contract/` stands alone as before. Once approved at Gate 2, the contract is **frozen**.
-4. Present: architecture summary, key ADR decisions, endpoint list.
+2. **Reuse before invention (brownfield)**: with `01-context.md` in hand, every "build something new" decision — new table, new module, new service, new component — must be an ADR that explicitly answers *"why the existing X cannot be extended instead"*. Adding a column to an existing table beats a new table; extending an existing module beats standing up a new one. Novelty without that justification is rejected at Gate 2.
+3. **Data evolution, not data design (brownfield)**: when the feature changes the schema of a system that already holds data, the deliverable is a **migration script**, not just a schema diagram. It must state, for each change: the default value or backfill strategy for existing rows, whether a nullable transition is needed, index/lock-table risk on large tables (flag it explicitly), and a **rollback plan**. Greenfield tables are designed directly; evolving a populated table without a migration + rollback is forbidden.
+4. Split frontend vs. backend responsibilities: which logic lives where, and where the boundary sits.
+5. Invoke the `trivium:api-contract` skill to produce the OpenAPI spec + TypeScript types + mock plan into `02-contract/`. **If a project-level contract exists** (`docs/project/contract/`, created by inception): this feature's `02-contract/` contains the **delta** (new/changed endpoints only, reusing the project's shared components — error body, pagination, auth); on Gate 2 approval, merge the delta into the project master contract, regenerate the master `types.ts`, and record the merge in the master `CHANGELOG.md`. Without a project contract, `02-contract/` stands alone as before. Once approved at Gate 2, the contract is **frozen**.
+6. Present: architecture summary, key ADR decisions, endpoint list — and, for brownfield, the reuse-vs-new decisions and the migration/rollback plan.
 
 **🚦 Gate 2: STOP. Await user approval of architecture and contract.**
 
@@ -97,18 +112,20 @@ docs/pipeline/<feature-slug>/
 ## Phase 4 — Implementation
 
 1. Invoke the `superpowers:using-git-worktrees` skill to create an isolated workspace with a clean test baseline.
-2. Invoke the `superpowers:subagent-driven-development` skill to execute `03-plan.md` task by task. That skill has TDD (red-green-refactor) and two-stage review (spec compliance → code quality) built in. **Never nest this command or the other entry commands inside a task.**
-3. Issues found in review are rework within the current task: fix in the same task context and re-review. Do not invoke /bugfix.
-4. If implementation reveals the API contract must change: **stop implementation**, explain the reason and blast radius, return to Gate 2 for contract re-approval, then update affected tasks.
-5. After each task, give the user a brief report: task id, result, test status. This is visibility, not a gate — do not wait for approval.
+2. **Establish the green baseline**: run the full existing test suite and confirm it passes *before* writing any code. This green baseline is the invariant the whole phase must preserve — the top brownfield risk is a new feature quietly breaking delivered behavior. A red or unknown baseline is resolved with the user first (fix it, or explicitly record which pre-existing failures are out of scope) — never built on top of silently.
+3. Invoke the `superpowers:subagent-driven-development` skill to execute `03-plan.md` task by task. That skill has TDD (red-green-refactor) and two-stage review (spec compliance → code quality) built in. **Never nest this command or the other entry commands inside a task.**
+4. Issues found in review are rework within the current task: fix in the same task context and re-review. Do not invoke /bugfix.
+5. If implementation reveals the API contract must change: **stop implementation**, explain the reason and blast radius, return to Gate 2 for contract re-approval, then update affected tasks.
+6. After each task, give the user a brief report: task id, result, test status. This is visibility, not a gate — do not wait for approval.
 
 ---
 
 ## Phase 5 — Acceptance
 
 1. Confirm the `[INTEGRATION]` task is complete and mocks are removed.
-2. Invoke the `trivium:acceptance` skill: generate and run Playwright end-to-end specs from the acceptance criteria in `01-prd.md`, producing the traceability matrix and report into `04-acceptance/`.
-3. Failed items go back to Phase 4 and are fixed in the corresponding task context (still in-development defects — not /bugfix), then re-run acceptance.
-4. When everything passes, invoke `superpowers:finishing-a-development-branch` (if available) for branch wrap-up, and present a delivery report: feature completion status, test coverage, acceptance results, open items.
+2. **Full regression first**: run the entire existing test suite and confirm the Phase 4 green baseline still holds. Acceptance is **two-sided** — the feature must meet its PRD *and* must not have broken delivered behavior. Any pre-existing test that is now red is a regression: back to Phase 4, fixed in the offending task's context.
+3. Invoke the `trivium:acceptance` skill: generate and run Playwright end-to-end specs from the acceptance criteria in `01-prd.md`, producing the traceability matrix and report into `04-acceptance/`.
+4. Failed items go back to Phase 4 and are fixed in the corresponding task context (still in-development defects — not /bugfix), then re-run acceptance.
+5. When everything passes (full regression green **and** all acceptance criteria met), invoke `superpowers:finishing-a-development-branch` (if available) for branch wrap-up, and present a delivery report: feature completion status, test coverage, regression + acceptance results, open items.
 
 **🚦 Gate 4: STOP. Await final user sign-off.** Then merge / open PR / keep branch per the user's choice.

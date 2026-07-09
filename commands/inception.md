@@ -15,9 +15,18 @@ This command draws the **map** for a new (or newly adopted) project: the vision,
 
 Run it once per project. Re-run only for major direction changes, and then only regenerate the affected artifacts (existing `approved` artifacts are inputs, not things to overwrite silently).
 
+## Greenfield or brownfield
+
+Detect the starting point before Phase 1: an empty or near-empty repo is **greenfield** — design forward, exactly as the phases below describe. A repo that already holds a real codebase is **brownfield**, and inception switches to **archaeology mode** so an existing project can adopt Trivium and still gain project-context awareness and an accumulating contract. Only the *source of truth* changes; the three Gates do not:
+
+- **Vision (Phase 1)** is still elicited from you and confirmed at Gate 1 — direction is a human decision, never reverse-engineered from code.
+- **Architecture & conventions (Phase 2)** are **extracted from the code, not invented**: dispatch a subagent to derive the real module boundaries, data ownership, stack, and de-facto conventions, and record them as the starting `01-architecture.md` / `02-conventions.md`. Where the code diverges from what it *should* be, note the gap and seed it as a `route: refactor` backlog entry rather than silently blessing it.
+- **Contract** is **reverse-generated** from the existing endpoints into `docs/project/contract/` as the project master contract, instead of starting from an empty skeleton.
+- **Backlog (Phase 3)** holds only **future** work; the mandatory walking-skeleton entry is **skipped** when a running system already exists (the skeleton it would validate is already in production).
+
 ## Phase 0 — Input Parsing (automatic, no gate)
 
-Same rules as the other trivium commands: `$ARGUMENTS` may be vision text, file paths (.md / .txt / .docx / .doc / .pdf — extract via pandoc / python-docx / libreoffice / pdftotext / pdfplumber; stop on failed extraction and request a text version), or both. Archive extracted content verbatim to `docs/project/00-source.md`. Supplementary notes win on conflict, confirmed during disambiguation.
+Same rules as the other trivium commands: `$ARGUMENTS` may be vision text, file paths (.md / .txt / .docx / .doc / .pdf — extract via pandoc / python-docx / libreoffice / pdftotext / pdfplumber; stop on failed extraction and request a text version), or both. When matching file paths, **tolerate spaces in filenames**: if a path-like token does not resolve on its own, greedily test whether it joined with the following token(s) by single spaces forms a path that does exist, and treat that whole span as one file before classifying the rest as vision text / notes. Archive extracted content verbatim to `docs/project/00-source.md`. Supplementary notes win on conflict, confirmed during disambiguation.
 
 ## Global Rules
 
@@ -56,7 +65,7 @@ docs/project/
 
 1. Design the **system-level skeleton** in `01-architecture.md`: tech-stack selection as ADRs (Context / Options / Decision / Trade-offs), module boundaries and responsibilities, data ownership per module, deployment shape. Skeleton, not detail — how each module works inside is decided per-feature in that feature's Phase 2.
 2. Write `02-conventions.md`: API style, the project-wide error-body shape, naming conventions, testing conventions, engineering invariants. Then **create or update the project's CLAUDE.md** so every future session inherits these conventions automatically (keep CLAUDE.md to invariants only; point to `docs/project/` for the rest).
-3. Initialize `docs/project/contract/` with a skeleton `openapi.yaml` (shared components: error body, pagination, auth scheme — no endpoints yet; features add those as deltas).
+3. Initialize `docs/project/contract/` with a skeleton `openapi.yaml` (shared components: error body, pagination, auth scheme — no endpoints yet; features add those as deltas). **Brownfield**: reverse-generate the master contract from the existing endpoints instead of starting empty (see *Greenfield or brownfield*).
 4. Present: architecture summary, key ADRs, conventions digest.
 
 **🚦 Gate 2: STOP. Await user approval of architecture and conventions.**
@@ -71,7 +80,7 @@ docs/project/
    - behavior preserved, structure changed → `route: refactor`
    - delivered code deviates from defined behavior → `route: bugfix`
    (A fresh project's backlog is naturally almost all `feature`; the other routes accumulate as the project lives.)
-3. **The first entry is mandatory: a walking skeleton** — the thinnest slice that cuts through every architectural layer (one trivial endpoint + one trivial page + database + CI/CD to a deployable environment). Near-zero business value, maximum architecture-validation value. No other feature starts before the skeleton is accepted.
+3. **The first entry is mandatory (greenfield): a walking skeleton** — the thinnest slice that cuts through every architectural layer (one trivial endpoint + one trivial page + database + CI/CD to a deployable environment). Near-zero business value, maximum architecture-validation value. No other feature starts before the skeleton is accepted. **Brownfield**: skip the skeleton — a running system has already proven its layers wire together — and fill the backlog with future work only.
 4. Entry template:
 
 ```markdown
