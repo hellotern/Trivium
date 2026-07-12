@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- **Visual design system, first-class**: new `design-system` skill — a project-wide, strictly business-agnostic visual language (color, typography, spacing, radius, component appearance, motion personality), the visual counterpart of `api-contract`.
+  - `/trivium:inception` **Phase 2** now establishes it in `docs/project/design/` (approved at Gate 2); brownfield reverse-extracts the de-facto language from existing UI instead of inventing one.
+  - `/trivium:feature` gains a dedicated **UI gate**: new **Phase 3 — UI Design** renders this feature's screens from the project design system (via a design MCP such as Stitch, `apply_design_system`) into `02-screens/` and requires visual sign-off (**Gate 3**) *before any page is implemented*. Screens are business composition; they compose the frozen visual language and never redefine it. Downstream phases/gates renumbered (plan → Phase 4/Gate 4, implementation → Phase 5, acceptance → Phase 6/Gate 5).
+
 ## 1.0.0 — 2026-07-09
 
 Initial release.

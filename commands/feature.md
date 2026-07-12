@@ -17,7 +17,7 @@ $ARGUMENTS
 
 1. Read the entry from `docs/project/backlog.md`. If the file or the ID does not exist, stop and tell the user.
 2. **Route re-check**: verify the entry still belongs on this road using the relationship-to-defined-behavior rule (new observable behavior → feature; behavior preserved, structure changed → refactor; deviation from defined behavior → bugfix). Triage-time labels decay as the codebase evolves — if the entry's substance no longer matches `route: feature` (e.g. the capability already partially exists), stop and recommend the correct command instead of forcing this pipeline.
-3. Use the entry's Description + Dependencies as the raw requirement; mark the entry 🔧 in-progress. When Gate 4 passes, **write the entry's status back to ✅** in backlog.md.
+3. Use the entry's Description + Dependencies as the raw requirement; mark the entry 🔧 in-progress. When Gate 5 passes, **write the entry's status back to ✅** in backlog.md.
 
 ### 0.b File and text input
 
@@ -50,8 +50,9 @@ docs/pipeline/<feature-slug>/
 ├── 01-prd.md            # Phase 1
 ├── 02-design.md         # Phase 2 (architecture + ADRs)
 ├── 02-contract/         # Phase 2 (openapi.yaml + types.ts + mock notes)
-├── 03-plan.md           # Phase 3
-└── 04-acceptance/       # Phase 5 (Playwright specs + traceability + report)
+├── 02-screens/          # Phase 3 (per-screen Stitch prompts + rendered previews; composes the project design system)
+├── 03-plan.md           # Phase 4
+└── 04-acceptance/       # Phase 6 (Playwright specs + traceability + report)
 ```
 
 `<feature-slug>` is a short kebab-case identifier derived from the requirement, e.g. `user-auth-jwt`.
@@ -62,7 +63,7 @@ docs/pipeline/<feature-slug>/
 
 One step, one artifact (`01-context.md`), before any disambiguation question. Building a feature into an existing system is the norm, not the exception — questions asked before reading the ground are asked in a vacuum, and Phase 2 then invents patterns that clash with what already exists. Load context in two passes, cheapest first:
 
-1. **Project context** — if `docs/project/` exists (created by `/trivium:inception`), read `00-vision.md`, `01-architecture.md`, and `02-conventions.md` first. These already answer project-level questions (users, non-goals, stack, conventions); Phase 1 must not re-ask them, and the PRD **references** these documents rather than restating them.
+1. **Project context** — if `docs/project/` exists (created by `/trivium:inception`), read `00-vision.md`, `01-architecture.md`, `02-conventions.md`, and — when present — `design/design.md` first. These already answer project-level questions (users, non-goals, stack, conventions, visual language); Phase 1 must not re-ask them, and the PRD **references** these documents rather than restating them.
 2. **Feature-level codebase archaeology** — dispatch a subagent to survey the ground *this* feature will land on: the modules and files it will touch or sit beside; the **existing data models** relevant to it (tables/entities and ownership); **reusable components, services, and utilities** already present; the local **conventions** it must conform to; and existing tests around the affected area. This is **incremental, not a full re-survey**: when `docs/project/` already exists (brownfield inception has mapped the system), build on `01-architecture.md` and dig only the slice this feature touches; with no project docs, cast a slightly wider net since this is the only archaeology. **Skip archaeology entirely only for a truly greenfield, near-empty repo** where there is nothing to dig.
 3. Record **conclusions, not code dumps** into `01-context.md` — each conclusion names the concrete artifact (file / table / component) it refers to.
 
@@ -95,38 +96,52 @@ No gate here; the output feeds Phase 1, and its highlights are surfaced at Gate 
 
 ---
 
-## Phase 3 — Task Plan
+## Phase 3 — UI Design
 
-1. Invoke the `superpowers:writing-plans` skill against `01-prd.md` and `02-design.md`, writing the plan to `03-plan.md`.
-2. On top of the superpowers plan template, enforce these pipeline additions:
-   - Tag every task `[FE]` / `[BE]` / `[SHARED]`;
-   - `[FE]` tasks develop exclusively against the mocks from `02-contract/` — never against a live backend;
-   - `[BE]` task verification must include contract tests (implementation matches openapi.yaml);
-   - The plan **must end with an `[INTEGRATION]` task**: remove mocks, wire FE to the real backend, prepare for Phase 5 acceptance. A plan without an integration task is incomplete and must not be submitted to Gate 3.
-   - **Size guard**: if the plan exceeds ~20 tasks, the feature is cut too coarse. Stop, propose a split into two (or more) independently deliverable features (updating backlog.md if this came from a backlog entry), and let the user choose at Gate 3 — do not swallow an oversized plan.
-3. Present the task list (id, tag, one-line goal, dependencies).
+**Only when this feature has UI.** For a backend-only feature, state that explicitly and skip straight to Phase 4 — there is nothing to sign off visually.
 
-**🚦 Gate 3: STOP. Await user approval of the plan.**
+1. Invoke the `trivium:design-system` skill to design *this feature's screens* into `02-screens/` — the screen inventory, the flow between them, and one Stitch prompt per screen. Screens are **business composition**: they arrange the project design system's components and set copy; they must **`apply_design_system`** (the id in `docs/project/design/design-system.json`) and must not restate or override visual tokens. With no project design system, `02-screens/` still holds the screen designs but there is no shared visual language to inherit.
+2. **Generate the real screens**, don't just describe them: run each `<screen>.prompt.md` through the design MCP — `generate_screen_from_text` then `apply_design_system` — and save the rendered result (preview image / HTML + link) next to its prompt in `02-screens/`. The whole point of this gate is that the user **sees the actual UI** before a line of page code is written. If no design MCP is available, fall back per the `trivium:design-system` skill (annotated wireframes/specs built to `design.md`) and sign those off instead — the gate still happens, only the fidelity of the preview drops.
+3. A screen that genuinely needs a **new visual primitive** (a new component appearance or token) is a change request against the master `design.md` — approved and merged like a contract delta, recorded in the design `CHANGELOG.md` — never a local reinvention. This is what keeps every feature's UI looking like one product.
+4. **Data the screens need but the frozen contract can't supply** (a missing field, a missing endpoint) is a **contract change, not something to invent around**: stop, return to Gate 2 for a contract delta (re-approve, merge, regenerate types), then resume the UI. Only the *visual look* iterates freely inside this phase; *data needs* go back to the contract. This keeps the contract and the UI mutually consistent instead of silently diverging.
+5. Present the **rendered screens** for visual sign-off (screen list + each generated preview) and iterate here until the user is satisfied. This visual loop is deliberately isolated from the frozen contract: adjusting the look never reopens Gate 2 (only a genuine data gap, per step 4, does).
+
+**🚦 Gate 3: STOP. Await user approval of the UI. No page is implemented before the screens are signed off.**
 
 ---
 
-## Phase 4 — Implementation
+## Phase 4 — Task Plan
+
+1. Invoke the `superpowers:writing-plans` skill against `01-prd.md`, `02-design.md`, and (for UI features) the approved `02-screens/`, writing the plan to `03-plan.md`.
+2. On top of the superpowers plan template, enforce these pipeline additions:
+   - Tag every task `[FE]` / `[BE]` / `[SHARED]`;
+   - `[FE]` tasks develop exclusively against the mocks from `02-contract/` — never against a live backend — and implement the **approved screens in `02-screens/`** by composing the project design system, never by hardcoding visual values or diverging from the signed-off UI;
+   - `[BE]` task verification must include contract tests (implementation matches openapi.yaml);
+   - The plan **must end with an `[INTEGRATION]` task**: remove mocks, wire FE to the real backend, prepare for Phase 6 acceptance. A plan without an integration task is incomplete and must not be submitted to Gate 4.
+   - **Size guard**: if the plan exceeds ~20 tasks, the feature is cut too coarse. Stop, propose a split into two (or more) independently deliverable features (updating backlog.md if this came from a backlog entry), and let the user choose at Gate 4 — do not swallow an oversized plan.
+3. Present the task list (id, tag, one-line goal, dependencies).
+
+**🚦 Gate 4: STOP. Await user approval of the plan.**
+
+---
+
+## Phase 5 — Implementation
 
 1. Invoke the `superpowers:using-git-worktrees` skill to create an isolated workspace with a clean test baseline.
 2. **Establish the green baseline**: run the full existing test suite and confirm it passes *before* writing any code. This green baseline is the invariant the whole phase must preserve — the top brownfield risk is a new feature quietly breaking delivered behavior. A red or unknown baseline is resolved with the user first (fix it, or explicitly record which pre-existing failures are out of scope) — never built on top of silently.
 3. Invoke the `superpowers:subagent-driven-development` skill to execute `03-plan.md` task by task. That skill has TDD (red-green-refactor) and two-stage review (spec compliance → code quality) built in. **Never nest this command or the other entry commands inside a task.**
 4. Issues found in review are rework within the current task: fix in the same task context and re-review. Do not invoke /bugfix.
-5. If implementation reveals the API contract must change: **stop implementation**, explain the reason and blast radius, return to Gate 2 for contract re-approval, then update affected tasks.
+5. If implementation reveals the API contract must change: **stop implementation**, explain the reason and blast radius, return to Gate 2 for contract re-approval, then update affected tasks. If it reveals the **approved UI** must change, return to Gate 3 the same way — do not let a page silently drift from the signed-off screens.
 6. After each task, give the user a brief report: task id, result, test status. This is visibility, not a gate — do not wait for approval.
 
 ---
 
-## Phase 5 — Acceptance
+## Phase 6 — Acceptance
 
 1. Confirm the `[INTEGRATION]` task is complete and mocks are removed.
-2. **Full regression first**: run the entire existing test suite and confirm the Phase 4 green baseline still holds. Acceptance is **two-sided** — the feature must meet its PRD *and* must not have broken delivered behavior. Any pre-existing test that is now red is a regression: back to Phase 4, fixed in the offending task's context.
+2. **Full regression first**: run the entire existing test suite and confirm the Phase 5 green baseline still holds. Acceptance is **two-sided** — the feature must meet its PRD *and* must not have broken delivered behavior. Any pre-existing test that is now red is a regression: back to Phase 5, fixed in the offending task's context.
 3. Invoke the `trivium:acceptance` skill: generate and run Playwright end-to-end specs from the acceptance criteria in `01-prd.md`, producing the traceability matrix and report into `04-acceptance/`.
-4. Failed items go back to Phase 4 and are fixed in the corresponding task context (still in-development defects — not /bugfix), then re-run acceptance.
+4. Failed items go back to Phase 5 and are fixed in the corresponding task context (still in-development defects — not /bugfix), then re-run acceptance.
 5. When everything passes (full regression green **and** all acceptance criteria met), invoke `superpowers:finishing-a-development-branch` (if available) for branch wrap-up, and present a delivery report: feature completion status, test coverage, regression + acceptance results, open items.
 
-**🚦 Gate 4: STOP. Await final user sign-off.** Then merge / open PR / keep branch per the user's choice.
+**🚦 Gate 5: STOP. Await final user sign-off.** Then merge / open PR / keep branch per the user's choice.

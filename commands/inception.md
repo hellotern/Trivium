@@ -22,6 +22,7 @@ Detect the starting point before Phase 1: an empty or near-empty repo is **green
 - **Vision (Phase 1)** is still elicited from you and confirmed at Gate 1 — direction is a human decision, never reverse-engineered from code.
 - **Architecture & conventions (Phase 2)** are **extracted from the code, not invented**: derive the real module boundaries, data ownership, stack, and de-facto conventions, and record them as the starting `01-architecture.md` / `02-conventions.md`. Prefer a code-intelligence MCP or LSP for module boundaries and call graphs when one is available and freshly indexed; fall back to subagent exploration otherwise. Where the code diverges from what it *should* be, note the gap and seed it as a `route: refactor` backlog entry rather than silently blessing it.
 - **Contract** is **reverse-generated** from the existing endpoints into `docs/project/contract/` as the project master contract, instead of starting from an empty skeleton. **Scoped, not exhaustive** — reverse-engineering hundreds of endpoints up front is wasted work, since most are never touched by a new feature: capture only the **shared components** (error body, pagination, auth scheme) plus the **core high-frequency endpoints**, and let the long tail be backfilled on demand — each remaining endpoint is added to the master contract the first time a feature touches it, in that feature's Phase 2.
+- **Design system** is **reverse-extracted** from the existing UI into `docs/project/design/` — the de-facto visual language (color, typography, spacing, radius, component appearance, motion) — instead of invented. Genuine visual inconsistencies are seeded as `route: refactor` entries, not blessed.
 - **Backlog (Phase 3)** holds only **future** work; the mandatory walking-skeleton entry is **skipped** when a running system already exists (the skeleton it would validate is already in production).
 
 ## Phase 0 — Input Parsing (automatic, no gate)
@@ -46,6 +47,10 @@ docs/project/
 │   ├── openapi.yaml
 │   ├── types.ts
 │   └── CHANGELOG.md
+├── design/              # project-level visual design system (accumulates across features)
+│   ├── design.md
+│   ├── design-system.json
+│   └── CHANGELOG.md
 └── backlog.md           # epic → feature backlog (living document)
 ```
 
@@ -66,9 +71,10 @@ docs/project/
 1. Design the **system-level skeleton** in `01-architecture.md`: tech-stack selection as ADRs (Context / Options / Decision / Trade-offs), module boundaries and responsibilities, data ownership per module, deployment shape. Skeleton, not detail — how each module works inside is decided per-feature in that feature's Phase 2.
 2. Write `02-conventions.md`: API style, the project-wide error-body shape, naming conventions, testing conventions, engineering invariants. Then **create or update the project's CLAUDE.md** so every future session inherits these conventions automatically (keep CLAUDE.md to invariants only; point to `docs/project/` for the rest).
 3. Initialize `docs/project/contract/` with a skeleton `openapi.yaml` (shared components: error body, pagination, auth scheme — no endpoints yet; features add those as deltas). **Brownfield**: reverse-generate the master contract from the existing endpoints instead of starting empty (see *Greenfield or brownfield*).
-4. Present: architecture summary, key ADRs, conventions digest.
+4. **If the project has any UI surface** (web / mobile / desktop front-end — skip this step entirely for a headless API, CLI, or library, and note that it was skipped): invoke the `trivium:design-system` skill to establish the project's **visual** design system into `docs/project/design/`: the business-agnostic visual language (color, typography, spacing, radius, component appearance, motion personality) plus, when a design MCP is available, a registered design system features can apply. This is the visual counterpart of the contract — skeleton, not screens: it defines *how things look*, never *what any screen does*; per-feature screens are composed later in each feature's Phase 3 (its dedicated UI gate). **Brownfield**: reverse-extract the de-facto design language from the existing UI instead of inventing one (see *Greenfield or brownfield*).
+5. Present: architecture summary, key ADRs, conventions digest, design-language digest.
 
-**🚦 Gate 2: STOP. Await user approval of architecture and conventions.**
+**🚦 Gate 2: STOP. Await user approval of architecture, conventions, and design system.**
 
 ---
 
@@ -80,7 +86,7 @@ docs/project/
    - behavior preserved, structure changed → `route: refactor`
    - delivered code deviates from defined behavior → `route: bugfix`
    (A fresh project's backlog is naturally almost all `feature`; the other routes accumulate as the project lives.)
-3. **The first entry is mandatory (greenfield): a walking skeleton** — the thinnest slice that cuts through every architectural layer (one trivial endpoint + one trivial page + database + CI/CD to a deployable environment). Near-zero business value, maximum architecture-validation value. No other feature starts before the skeleton is accepted. **Brownfield**: skip the skeleton — a running system has already proven its layers wire together — and fill the backlog with future work only.
+3. **The first entry is mandatory (greenfield): a walking skeleton** — the thinnest slice that cuts through every architectural layer (one trivial endpoint + one trivial page *rendered with the design system, when the project has UI* + database + CI/CD to a deployable environment). Near-zero business value, maximum architecture- (and, for UI projects, design-system-) validation value. No other feature starts before the skeleton is accepted. **Brownfield**: skip the skeleton — a running system has already proven its layers wire together — and fill the backlog with future work only.
 4. Entry template:
 
 ```markdown

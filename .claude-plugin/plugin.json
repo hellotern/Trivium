@@ -2,7 +2,7 @@
   "name": "trivium",
   "displayName": "Trivium",
   "version": "1.0.0",
-  "description": "Three roads, four gates. Spec-driven development pipelines for Claude Code: /feature, /refactor, and /bugfix entry commands — plus /inception to map a new project into a route-labeled backlog — with hard human-approval gates, frozen API contracts enabling parallel frontend/backend subagents, and PRD-traced Playwright acceptance. Builds on the superpowers methodology.",
+  "description": "Three roads, gated by you. Spec-driven development pipelines for Claude Code: /feature, /refactor, and /bugfix entry commands — plus /inception to map a new project into a route-labeled backlog — with hard human-approval gates, frozen API contracts enabling parallel frontend/backend subagents, a shared visual design system, and PRD-traced Playwright acceptance. Builds on the superpowers methodology.",
   "author": {
     "name": "Mohist",
     "url": "https://github.com/hellotern"

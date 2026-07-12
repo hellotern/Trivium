@@ -66,7 +66,7 @@ P0: x/x passed; P1: x/x passed; referenced existing tests: n
 
 ### 4. Failure-handling principles
 
-- **Failures inside an active pipeline** (/feature Phase 5, /refactor Phase 5): return to the owning task's context, fix, re-run. This is rework, not /bugfix.
+- **Failures inside an active pipeline** (/feature Phase 6, /refactor Phase 5): return to the owning task's context, fix, re-run. This is rework, not /bugfix.
 - Failures attributed to **PRD ambiguity**: silently bending the test or the implementation to your own interpretation is forbidden — return to the gate, clarify with the user, amend the PRD, then update the matrix.
 - **Flaky specs**: in an acceptance report, flaky = failed. Fix determinism first (explicit wait conditions, controlled data); masking with retries is forbidden.
 - The bar for passing is **a fully green run in one execution**, not "the failures passed when re-run individually".
