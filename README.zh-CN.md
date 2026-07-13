@@ -19,10 +19,11 @@
 **新项目**不能用一次 /feature 吞下整个愿景——预生成几百个 task 是保鲜期为零的大设计先行。`/trivium:inception` 负责画地图（每个项目跑一次）：
 
 1. **愿景宪法**（`docs/project/00-vision.md`）：目标、用户、成功指标、项目级非目标。🚦
-2. **系统架构、全局约定与设计系统**（`01-architecture.md`、`02-conventions.md` → 同步 CLAUDE.md；初始化项目级 API 合同，*以及*项目级**视觉设计系统** `docs/project/design/`——与业务无关的色彩/字体/间距/组件/动效语言，供每个 feature 组合复用）。🚦
-3. **Backlog**（`backlog.md`）：epic → feature 两级，**到 feature 粒度为止**——task 在每次 /feature 运行时即时生成。每个条目带 `route:` 路由标签（feature / refactor / bugfix，按"与已定义行为的关系"判定）和可直接复制的 `Run:` 执行命令。首条强制为**行走骨架**：打穿全部架构层的最薄切片，先验证架构再砌砖。🚦
+2. **系统架构与全局约定**（`01-architecture.md`、`02-conventions.md` → 同步 CLAUDE.md；初始化项目级 API 合同）。🚦
+3. **设计系统**（`docs/project/design/`）——**仅 UI 项目**（headless API / CLI / 库会跳过）：项目级**视觉设计系统**，与业务无关的色彩/字体/间距/组件/动效语言，供每个 feature 组合复用。拥有独立的门，与 feature 的 UI 门对称。🚦
+4. **Backlog**（`backlog.md`）：epic → feature 两级，**到 feature 粒度为止**——task 在每次 /feature 运行时即时生成。每个条目带 `route:` 路由标签（feature / refactor / bugfix，按"与已定义行为的关系"判定）和可直接复制的 `Run:` 执行命令。首条强制为**行走骨架**：打穿全部架构层的最薄切片，先验证架构再砌砖。🚦
 
-**接手存量项目？** `/trivium:inception` 还支持 **brownfield（存量）模式**：架构与约定*从代码中提取*而非凭空设计，主合同由现有接口反向生成，跳过行走骨架，backlog 只装未来需求——愿景仍由你确认，三道 Gate 不变。
+**接手存量项目？** `/trivium:inception` 还支持 **brownfield（存量）模式**：架构与约定*从代码中提取*而非凭空设计，主合同由现有接口反向生成，设计系统从现有 UI 反向提取，跳过行走骨架，backlog 只装未来需求——愿景仍由你确认，各道 Gate 不变。
 
 长期循环收敛为：取下一条 backlog → 粘贴 Run 行 → 签 Gate → 状态自动回写 → 重复。路由标签在执行时复核（标签随代码库演化而失效），计划超过约 20 个 task 的 feature 会被要求拆分而非硬吞，每个 feature 的合同以增量方式合并进项目主合同。
 
@@ -32,7 +33,7 @@
 
 | | Gate 1 | Gate 2 | Gate 3 | Gate 4 | Gate 5 |
 |---|---|---|---|---|---|
-| inception | 批愿景 | 批架构+约定+设计系统 | 批 backlog+首里程碑 | — | — |
+| inception | 批愿景 | 批架构+约定 | 批设计系统（UI 项目） | 批 backlog+首里程碑 | — |
 | feature | 批 PRD | 批架构+合同 | **批 UI** | 批计划 | 终审验收 |
 | refactor | 确认影响面+行为分类 | 批变更方案 | 批计划 | 终审回归 | — |
 | bugfix（单个） | 确认复现 | — | — | 终审修复 | — |
@@ -77,8 +78,15 @@ Trivium 的结构探查环节——代码考古、影响 / 爆炸半径分析、
 或直接从本仓库：
 
 ```
+# 添加源并安装
+
 /plugin marketplace add hellotern/Trivium
 /plugin install trivium@trivium
+
+# 如果以前安装过，则先卸载已安装的，再重新安装，依次执行：                                                                                                                                        
+                                                                                                                                                                                
+ /plugin uninstall trivium@trivium                                                                                                                                             
+ /plugin marketplace remove trivium     
 ```
 
 ## 使用

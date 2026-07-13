@@ -19,10 +19,11 @@
 For a **new project**, one `/feature` run cannot swallow the whole vision — and pre-generating hundreds of tasks is planning that decays before it runs. `/trivium:inception` draws the map instead (run once per project):
 
 1. **Vision constitution** (`docs/project/00-vision.md`): goals, users, success metrics, project-level non-goals. 🚦
-2. **System architecture, conventions & design system** (`01-architecture.md`, `02-conventions.md` → feeds CLAUDE.md; initializes the project-level API contract *and* the project-level **visual design system** in `docs/project/design/` — the business-agnostic color/type/spacing/component/motion language every feature composes from). 🚦
-3. **Backlog** (`backlog.md`): epic → feature, **stopping at feature grain** — tasks are generated just-in-time inside each `/feature` run. Every entry carries a `route:` label (feature / refactor / bugfix, judged by its relationship to defined behavior) and a copy-pasteable `Run:` command. The first entry is always a **walking skeleton**: the thinnest slice through every architectural layer, validating the architecture before anything else is built. 🚦
+2. **System architecture & conventions** (`01-architecture.md`, `02-conventions.md` → feeds CLAUDE.md; initializes the project-level API contract). 🚦
+3. **Design system** (`docs/project/design/`) — **UI projects only** (skipped for a headless API / CLI / library): the project-level **visual design system**, a business-agnostic color/type/spacing/component/motion language every feature composes from. Its own dedicated gate, mirroring the feature UI gate. 🚦
+4. **Backlog** (`backlog.md`): epic → feature, **stopping at feature grain** — tasks are generated just-in-time inside each `/feature` run. Every entry carries a `route:` label (feature / refactor / bugfix, judged by its relationship to defined behavior) and a copy-pasteable `Run:` command. The first entry is always a **walking skeleton**: the thinnest slice through every architectural layer, validating the architecture before anything else is built. 🚦
 
-**Adopting an existing codebase?** `/trivium:inception` also runs in **brownfield mode**: architecture and conventions are *extracted from the code* (not invented), the master contract is reverse-generated from existing endpoints, the walking skeleton is skipped, and the backlog holds only future work — you still confirm the vision and sign the same three gates.
+**Adopting an existing codebase?** `/trivium:inception` also runs in **brownfield mode**: architecture and conventions are *extracted from the code* (not invented), the master contract is reverse-generated from existing endpoints, the design system is reverse-extracted from the existing UI, the walking skeleton is skipped, and the backlog holds only future work — you still confirm the vision and sign the same gates.
 
 The long-running loop is then simply: pick the next backlog entry → paste its `Run:` line → sign gates → status writes back → repeat. Routes are re-checked at execution time (labels decay as the codebase evolves), features whose plans exceed ~20 tasks get split instead of swallowed, and each feature's contract merges as a delta into the project master contract.
 
@@ -32,7 +33,7 @@ Your role collapses to signing off at gates. Between gates, the pipeline runs it
 
 | | Gate 1 | Gate 2 | Gate 3 | Gate 4 | Gate 5 |
 |---|---|---|---|---|---|
-| inception | approve vision | approve architecture + conventions + design system | approve backlog + first milestone | — | — |
+| inception | approve vision | approve architecture + conventions | approve design system (UI projects) | approve backlog + first milestone | — |
 | feature | approve PRD | approve architecture + contract | **approve UI** | approve plan | final acceptance |
 | refactor | confirm impact + behavior classification | approve proposal | approve plan | final regression | — |
 | bugfix (single) | confirm reproduction | — | — | final sign-off | — |
